@@ -97,15 +97,17 @@ The suspect is a Get Fit Now member with ID 48Z, was working out on Jan 9, and h
 get_fit_now_member |>
   inner_join(get_fit_now_check_in,
              by = join_by(id == membership_id)) |>
-  full_join(drivers_license,
+  left_join(person,
              by = join_by(person_id == id)) |>
+  left_join(drivers_license,
+             by = join_by(license_id == id)) |>
   filter(str_detect(id, pattern = "48Z"),
-         check_in_date == 20180109)
+         check_in_date == 20180109,
+         str_detect(plate_number, pattern = "H42W")) |>
+  pull(name.x)
 
 ```
 
-
-
 ## And the final suspect is...
 
-*Put the name of the person responsible for the murder here:*
+Jeremy Bowers
