@@ -6,6 +6,7 @@ embed-resources: true
 code-tools: true
 toc: true
 editor: source
+code-fold: true
 execute: 
   error: true
   echo: true
@@ -64,11 +65,45 @@ Detective Wickham reaches out to you...
 ```{r}
 #| label: inspecting-crime-scene-report
 
+crime_scene_report |>
+  filter(date == 20180115, 
+         type == "murder",
+         city == "SQL City")
+
 ```
 
+Last house on Northwestern Dr, Annabel on Franklin Ave
 
 **Follow the evidence to the person responsible for the murder, building a report as you go.**
 Hint: Make sure you check for interviews with any suspects!
+
+```{r}
+#| label: inspecting-witnesses-interviews
+
+person |>
+  filter(address_street_name %in% c("Northwestern Dr",
+                                    "Franklin Ave"),
+         str_detect(name, pattern = "Annabel") | address_number == max(address_number, na.rm = TRUE)) |>
+  inner_join(interview,
+            by = join_by(id == person_id))
+
+```
+
+The suspect is a Get Fit Now member with ID 48Z, was working out on Jan 9, and has a car w/ license plate that includes H42W. 
+
+```{r}
+#| label: inspecting-gym-members-cars
+
+get_fit_now_member |>
+  inner_join(get_fit_now_check_in,
+             by = join_by(id == membership_id)) |>
+  full_join(drivers_license,
+             by = join_by(person_id == id)) |>
+  filter(str_detect(id, pattern = "48Z"),
+         check_in_date == 20180109)
+
+```
+
 
 
 ## And the final suspect is...
