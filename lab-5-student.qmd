@@ -12,6 +12,7 @@ execute:
   echo: true
   message: false
   warning: false
+theme: "sketchy"
 ---
 
 For this lab, you will be joining and filtering related datasets to solve a murder mystery!
