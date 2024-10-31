@@ -27,16 +27,15 @@ The relational data you will be working with contains tables with different piec
 
 Solve the murder mystery, showing **all of your work in this document**. Your document and code must be well organized, easy to follow, and reproducible.
 
-+ Use headers and written descriptions to indicate what you are doing.
-+ Use `dplyr` verbs and `join` functions rather than just looking through the tables manually.
-+ Use good code formatting practices.
-+ Comment your code.
-+ Cite any external sources you use to solve the mystery.
+-   Use headers and written descriptions to indicate what you are doing.
+-   Use `dplyr` verbs and `join` functions rather than just looking through the tables manually.
+-   Use good code formatting practices.
+-   Comment your code.
+-   Cite any external sources you use to solve the mystery.
 
-### Tips 
+### Tips
 
 You may find the `pull()` function handy for displaying each clue as you go along.
-
 
 ## Access the Data
 
@@ -75,8 +74,7 @@ crime_scene_report |>
 
 Last house on Northwestern Dr, Annabel on Franklin Ave
 
-**Follow the evidence to the person responsible for the murder, building a report as you go.**
-Hint: Make sure you check for interviews with any suspects!
+**Follow the evidence to the person responsible for the murder, building a report as you go.** Hint: Make sure you check for interviews with any suspects!
 
 ```{r}
 #| label: inspecting-witnesses-interviews
@@ -90,7 +88,10 @@ person |>
 
 ```
 
-The suspect is a Get Fit Now member with ID 48Z, was working out on Jan 9, and has a car w/ license plate that includes H42W. 
+The suspect is a Get Fit Now member with ID 48Z, was working out on Jan 9, and has a car w/ license plate that includes H42W.
+
+### Inspecting Gym Members' Cars
+
 
 ```{r}
 #| label: inspecting-gym-members-cars
@@ -99,16 +100,75 @@ get_fit_now_member |>
   inner_join(get_fit_now_check_in,
              by = join_by(id == membership_id)) |>
   left_join(person,
-             by = join_by(person_id == id)) |>
+             by = join_by(person_id == id, name == name)) |>
   left_join(drivers_license,
-             by = join_by(license_id == id)) |>
+             by = join_by(license_id == id)) |> 
   filter(str_detect(id, pattern = "48Z"),
          check_in_date == 20180109,
          str_detect(plate_number, pattern = "H42W")) |>
-  pull(name.x)
+  pull(name, person_id)
+
+```
+
+Jeremy Bowers is the new suspect
+
+### Interviewing the new suspect
+
+```{r}
+#| label: inspecting-jeremy-bowers
+
+interview |>
+  filter(str_detect(person_id, pattern = "67318"))
+
+```
+
+Jeremy Bowers was hired my a wealthy woman. 5'5" or 5'7". Red hair. Tesla Model S. Concert 3 times in December.
+
+### Investigating who hired Jeremy Bowers
+
+```{r}
+#| label: identify-who-hired-bowers
+
+person |>
+  right_join(drivers_license,
+             by = join_by(license_id == id)) |>
+  filter(car_make == "Tesla",
+         car_model == "Model S",
+         hair_color == "red",
+         height <= 67,
+         height >= 65)
+
+```
+
+Three suspects: Red, Regina, and Miranda
+
+### Investigating the 3 new suspects
+
+```{r}
+#| label: investigate-symphony
+
+facebook_event_checkin |>
+  mutate(date = ymd(date)) |>
+  filter(str_detect(event_name, 
+                    pattern = "SQL Symphony Concert"),
+         year(date) == 2017,
+         person_id == 78881 | person_id == 90700 | person_id == 99716) |>
+  inner_join(person, by = join_by(person_id == id))
+
+```
+
+SSN 987756388
+
+### Confirming the final suspect
+
+```{r}
+#| label: confirm-final-suspect 
+
+income |>
+  filter(ssn == 987756388)
 
 ```
 
 ## And the final suspect is...
 
-Jeremy Bowers
+Miranda Priestly
